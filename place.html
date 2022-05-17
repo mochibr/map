@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Place Details</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      // This example requires the Places library. Include the libraries=places
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 37.422, lng: -122.084057},
+          zoom: 15
+        });
+
+        var request = {
+          placeId: 'ChIJj61dQgK6j4AR4GeTYWZsKWw',
+          fields: ['name', 'formatted_address', 'place_id', 'geometry', 'address_component']
+        };
+
+        var infowindow = new google.maps.InfoWindow();
+        var service = new google.maps.places.PlacesService(map);
+        var components = [];
+
+        service.getDetails(request, function(place, status) {
+          console.log(place.address_components);
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            var marker = new google.maps.Marker({
+              map: map,
+              position: place.geometry.location
+            });
+           var country;
+           var state;
+            components = place.address_components;
+            for(i=0;i<components.length;i++){
+              if(place.address_components[i].types[0].toString() === 'administrative_area_level_1'){
+                state = place.address_components[i].long_name;
+              }else if(place.address_components[i].types[0].toString() === 'country'){
+                country = place.address_components[i].long_name;
+              } 
+            }
+            
+            google.maps.event.addListener(marker, 'click', function() {
+              infowindow.setContent('<div><strong>' + place.name + '</strong><br>' +
+                'Place ID: ' + place.place_id + '<br>' +
+                place.formatted_address + '<br>' +
+                'State: ' + state + '<br>' +
+                'Country: ' + country + '<br>' + '</div>');
+              infowindow.open(map, this);
+            });
+          }
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkUOdZ5y7hMm0yrcCQoCvLwzdM6M8s5qk&libraries=places&callback=initMap">
+    </script>
+  </body>
+</html>

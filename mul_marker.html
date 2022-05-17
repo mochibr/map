@@ -1,0 +1,120 @@
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&callback=map_init"></script>
+    <script type="text/javascript">
+        function InitializeMap() {
+		
+			/*var locations = [
+				  ['Gujarat', 22.25, 71.19],
+				  ['Chandigarh', 30.73, 76.77],				  
+				  ['Delhi', 28.70, 77.10],
+				  ['Jaipur', 26.91, 75.78]
+			];*/
+			
+			 var locations =[
+				['Demo', 41.599013054830216, -110.006103515625],
+				['Demo',41.566141964768384, -107.501220703125],
+				['Demo',41.64007838467894, -104.61181640625],
+				['Demo',41.66470503009207, -101.590576171875],
+				['Demo',40.39676430557203, -100.821533203125],
+				['Demo',38.66835610151509, -100.634765625],
+				['Demo',36.97622678464096, -100.8544921875],
+				['Demo',36.049098959065645, -101.239013671875],
+				['Demo',36.155617833818525, -104.150390625],
+				['Demo',35.92464453144099, -106.951904296875],
+				['Demo',36.08462129606931, -110.0390625],
+				['Demo',37.58811876638322, -110.45654296875],
+				['Demo',40.44694705960048, -110.14892578125],
+				['Demo',40.49709237269567, -108.160400390625],
+				['Demo',40.49709237269567, -104.468994140625],
+				['Demo',40.50544628405211, -102.843017578125],
+				['Demo',39.342794408952386, -103.348388671875],
+				['Demo',39.8928799002948, -105.567626953125],
+				['Demo',38.99357205820946, -105.963134765625],
+				['Demo',37.97884504049713, -103.941650390625],
+				['Demo',37.413800350662896, -103.02978515625],
+				['Demo',37.448696585910376, -104.83154296875],
+				['Demo',37.29153547292737, -107.42431640625],
+				['Demo',37.68382032669382, -108.5009765625],
+				['Demo',38.453588708941375, -107.149658203125]
+			];
+		
+            var myOptions = {
+                zoom: 10,
+                //center: latlng,
+                center: new google.maps.LatLng(locations[0][1], locations[0][2]),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+			
+			//console.log(mapTypeId);
+			
+            var map = new google.maps.Map(document.getElementById("map"), myOptions);
+			 var infowindow = new google.maps.InfoWindow();
+            for (var i = 0; i < locations.length; i++) {
+				//console.log(locations[i]);
+                var marker = new google.maps.Marker
+                    (
+                    {
+                        // position: new google.maps.LatLng(-34.397, 150.644),
+                        position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                        map: map,
+                        title: 'Click me'
+                    }
+                    );
+					
+				google.maps.event.addListener(marker, 'click', (function(marker, i) {
+					return function() {
+					  infowindow.setContent(locations[i][0]);
+					  infowindow.open(map, marker);
+					}
+				})(marker, i));
+            }
+            //***********ROUTING****************//
+
+            //Intialize the Path Array
+            var path = new google.maps.MVCArray();
+
+            //Intialize the Direction Service
+            var service = new google.maps.DirectionsService();
+			
+			
+			var coord_itineraire = "37.772323, -122.214897/21.291982, -157.821856/-18.142599, 178.431";
+			 var coord_itineraire_arr = coord_itineraire.split("/");
+			var flightPlanCoordinates = [];
+
+			for ( var key in coord_itineraire_arr ) {
+				//console.log("coord_itineraire_arr======"+coord_itineraire_arr);
+				var temp = coord_itineraire_arr[key].split(",");
+				
+				console.log("console-1======="+temp);
+				flightPlanCoordinates.push( new google.maps.LatLng( parseFloat( temp[0] ) , parseFloat( temp[1] ) ) );
+			}
+			
+			console.log(flightPlanCoordinates);
+			
+			 var ltlng = [];
+			for (var i = 0; i < locations.length; i++) {
+				//console.log(locations[i][1]+"======"+locations[i][2]);
+				 ltlng.push(new google.maps.LatLng(locations[i][1],locations[i][2]));
+			}
+			
+		
+
+			var flightPath = new google.maps.Polyline({
+			  path: ltlng,
+			  geodesic: true,
+			  strokeColor: '##35495e',
+			  strokeOpacity: 0.8,
+			 strokeWeight: 3
+			});
+			
+			console.log(flightPath);
+
+        flightPath.setMap(map);
+
+        }
+
+        window.onload = InitializeMap;
+
+    </script>
+    <h2>Creating Your First Google Map Demo:</h2>
+    <div id="map" style="width: 100%; top: 0px; left: 0px;  height:380px">
+    </div>
