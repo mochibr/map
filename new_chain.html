@@ -1,210 +1,252 @@
-
-<div id="map_canvas" style="position:absolute; width: 100%; top: 0px; left: 0px;  height:100vh"></div>
-<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&&libraries=geometry&callback=map_init"></script>
+<div
+  id="map_canvas"
+  style="position: absolute; width: 100%; top: 0px; left: 0px; height: 100vh"
+></div>
+<script
+  type="text/javascript"
+  src="http://maps.googleapis.com/maps/api/js?sensor=false&&libraries=geometry&callback=map_init"
+></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="data.js"></script>
 <script>
+  // Define the overlay, derived from google.maps.OverlayView
+  function Label(opt_options) {
+    // Initialization
+    this.setValues(opt_options);
 
-// Define the overlay, derived from google.maps.OverlayView
-function Label(opt_options) {
-	// Initialization
-	this.setValues(opt_options);
-	
-	// Label specific
-	var span = this.span_ = document.createElement('span');
-	span.style.cssText = 'position: relative; left: -50%; top: -8px; ' +
-	                     'white-space: nowrap; border: 1px solid blue; ' +
-	                     'padding: 2px; background-color: white';
-	
-	var div = this.div_ = document.createElement('div');
-	div.appendChild(span);
-	div.style.cssText = 'position: absolute; display: none';
-}
-Label.prototype = new google.maps.OverlayView();
+    // Label specific
+    var span = (this.span_ = document.createElement("span"));
+    span.style.cssText =
+      "position: relative; left: -50%; top: -8px; " +
+      "white-space: nowrap; border: 1px solid blue; " +
+      "padding: 2px; background-color: white";
 
-// Implement onAdd
-Label.prototype.onAdd = function() {
-	var pane = this.getPanes().floatPane;
-	pane.appendChild(this.div_);
-	
-	// Ensures the label is redrawn if the text or position is changed.
-	var me = this;
-	this.listeners_ = [
-		google.maps.event.addListener(this, 'position_changed',
-			function() { me.draw(); }),
-		google.maps.event.addListener(this, 'text_changed',
-			function() { me.draw(); })
-	];
-};
+    var div = (this.div_ = document.createElement("div"));
+    div.appendChild(span);
+    div.style.cssText = "position: absolute; display: none";
+  }
+  Label.prototype = new google.maps.OverlayView();
 
-// Implement onRemove
-Label.prototype.onRemove = function() {
-	var i, I;
-	this.div_.parentNode.removeChild(this.div_);
-	
-	// Label is removed from the map, stop updating its position/text.
-	for (i = 0, I = this.listeners_.length; i < I; ++i) {
-		google.maps.event.removeListener(this.listeners_[i]);
-	}
-};
+  // Implement onAdd
+  Label.prototype.onAdd = function () {
+    var pane = this.getPanes().floatPane;
+    pane.appendChild(this.div_);
 
-// Implement draw
-Label.prototype.draw = function() {
-	var projection = this.getProjection();
-	var position = projection.fromLatLngToDivPixel(this.get('position'));
-	
-	var div = this.div_;
-	div.style.left = position.x + 'px';
-	div.style.top = position.y + 'px';
-	div.style.display = 'block';
-	
-	this.span_.innerHTML = this.get('text').toString();
-};
+    // Ensures the label is redrawn if the text or position is changed.
+    var me = this;
+    this.listeners_ = [
+      google.maps.event.addListener(this, "position_changed", function () {
+        me.draw();
+      }),
+      google.maps.event.addListener(this, "text_changed", function () {
+        me.draw();
+      }),
+    ];
+  };
 
-var arrDestinations;
+  // Implement onRemove
+  Label.prototype.onRemove = function () {
+    var i, I;
+    this.div_.parentNode.removeChild(this.div_);
 
-function initialize() {
-	var map, i, j, latLng, stuDistances, inBetween, labelMarker;
-	
-	arrDestinations =  data;
-	
-	var stuHome = Home;
-	
-	var homeLatlng = new google.maps.LatLng(stuHome.lat, stuHome.lng);
-	var myOptions = {
-		zoom: 10,
-		center: homeLatlng,
-		mapTypeId: google.maps.MapTypeId.ROADMAP
-	};
-	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-			
-	var homeMarker = new google.maps.Marker({
-		position: homeLatlng, 
-		map: map, 
-		title: stuHome.title
-	});
-	
-	
-	
-	
-	var infowindow = new google.maps.InfoWindow();	
-	google.maps.event.addListener(homeMarker, 'click', function() {
-		infowindow.setContent(stuHome.title);
-		infowindow.open( map, homeMarker );
+    // Label is removed from the map, stop updating its position/text.
+    for (i = 0, I = this.listeners_.length; i < I; ++i) {
+      google.maps.event.removeListener(this.listeners_[i]);
+    }
+  };
+
+  // Implement draw
+  Label.prototype.draw = function () {
+    var projection = this.getProjection();
+    var position = projection.fromLatLngToDivPixel(this.get("position"));
+
+    var div = this.div_;
+    div.style.left = position.x + "px";
+    div.style.top = position.y + "px";
+    div.style.display = "block";
+
+    this.span_.innerHTML = this.get("text").toString();
+  };
+
+  var arrDestinations;
+
+  function initialize() {
+    var map, i, j, latLng, stuDistances, inBetween, labelMarker;
+
+    arrDestinations = data;
+
+    var stuHome = Home;
+
+    var homeLatlng = new google.maps.LatLng(stuHome.lat, stuHome.lng);
+    var myOptions = {
+      zoom: 10,
+      center: homeLatlng,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+    };
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+    var homeMarker = new google.maps.Marker({
+      position: homeLatlng,
+      map: map,
+      title: stuHome.title,
     });
-				
-	$('#tableNeighbours').append(
-		  '<tr>'
-		+ '<th>Destination</th>'
-		+ '<th colspan="2">' + stuHome.title + '</th>'
-		+ '</tr>'
-	);
-		  
-	for (i = 0; i < arrDestinations.length; i++) {
-		latLng = new google.maps.LatLng(arrDestinations[i].lat, arrDestinations[i].lng);
-		
-		var marker = arrDestinations[i].marker = new google.maps.Marker({
-			position: latLng,
-			map: map, 
-			title: arrDestinations[i].title,
-			icon: arrDestinations[i].flag
-		});
-		
-				google.maps.event.addListener(marker, 'click', (function(marker, i) {
-					//console.log(arrDestinations[i].title);
-					return function() {
-					  var html = "<b>" + arrDestinations[i].title + "</b></br><b>Name: "+arrDestinations[i].Name+"</b> <br/><b>Price: " + arrDestinations[i].price+"</b></br><b>DOP: "+arrDestinations[i].DOP+"</b>";
-					  infowindow.setContent(html);
-					//  infowindow.setContent(arrDestinations[i].price);
-					  infowindow.open(map, marker);
-					}
-				})(marker, i));		
-		// draw lines between each marker and home.  these are curved lines, not as the crow flies, i.e. they take into account the curvature of the earth (only noticable on longer distances)
-		arrDestinations[i].polyline = new google.maps.Polyline({
-			path: [homeLatlng, latLng],
-			strokeColor: arrDestinations[i].lineColor,
-			strokeOpacity: 0.8,
-			strokeWeight: 3,
-			geodesic: true,
-			map: map,
-			polylineID: i
-		});
-					
-		// calculate the distance between home and this marker
-		stuDistances = calculateDistances(homeLatlng, latLng);
-		$('#tableNeighbours').append(
-			  '<tr id="row' + i + '">' 
-			+ '<td>' + arrDestinations[i].title + '</td>'
-			+ '<td>' + stuDistances.km + ' km</td>'
-			+ '<td>' + stuDistances.miles + ' miles</td>'
-			+ '</tr>'
-		);
-		
-		// get the point half-way between this marker and the home marker
-		inBetween = google.maps.geometry.spherical.interpolate(homeLatlng, latLng, 0.5);  
-		
-		// create an invisible marker
-		labelMarker = new google.maps.Marker({  
-			position: inBetween,  
-			map: map,
-			visible: false
-		});
-		
-		arrDestinations[i].label = new Label();
-		
-		arrDestinations[i].label.bindTo('position', labelMarker, 'position');
-		arrDestinations[i].label.set('text', stuDistances.miles + ' miles');
-		
-		// we'll use this ID later:
-		arrDestinations[i].label.polylineID = i;
-	
-		// lets add an event listener, if you click the line, i'll tell you the distance
-		google.maps.event.addListener(arrDestinations[i].polyline, 'click', function() {
-			// remove other labels
-			for (j = 0; j < arrDestinations.length; j++){
-				if (this.polylineID != j) {
-					if(typeof(arrDestinations[j].label) != "undefined"){
-						arrDestinations[j].label.setMap(null);
-					}
-				} else {
-					arrDestinations[j].label.setMap(map);
-				}
-			}
-		});
-	}
-}
 
-function calculateDistances(start,end) {
-	var stuDistances = {};
-	
-	stuDistances.metres = google.maps.geometry.spherical.computeDistanceBetween(start, end);	// distance in metres rounded to 1dp
-	stuDistances.km = Math.round(stuDistances.metres / 1000 *10)/10;							// distance in km rounded to 1dp
-	stuDistances.miles = Math.round(stuDistances.metres / 1000 * 0.6214 *10)/10;				// distance in miles rounded to 1dp
+    var infowindow = new google.maps.InfoWindow();
+    google.maps.event.addListener(homeMarker, "click", function () {
+      infowindow.setContent(stuHome.title);
+      infowindow.open(map, homeMarker);
+    });
 
-	return stuDistances;
-}
+    $("#tableNeighbours").append(
+      "<tr>" +
+        "<th>Destination</th>" +
+        '<th colspan="2">' +
+        stuHome.title +
+        "</th>" +
+        "</tr>"
+    );
 
-function removeAllLabels() {
-	var i;
-	// remove other markers
-	for (i = 0; i < arrDestinations.length; i++){
-		// don't remove the current label
-		if(typeof(arrDestinations[i].label) != "undefined"){
-			arrDestinations[i].label.setMap(null);
-		}
-	}
-}
+    for (i = 0; i < arrDestinations.length; i++) {
+      latLng = new google.maps.LatLng(
+        arrDestinations[i].lat,
+        arrDestinations[i].lng
+      );
 
-$(document).ready(function() {
-	$('table').delegate("td", "mouseover mouseout", function(e) {
-		if (e.type == 'mouseover') {
-			var id = $(this).parent().attr('id').replace('row', '');
-			google.maps.event.trigger(arrDestinations[id].polyline, 'click');
-		} else {
-			removeAllLabels();
-		}
-	});
-});
+      var marker = (arrDestinations[i].marker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: arrDestinations[i].title,
+        icon: arrDestinations[i].flag,
+      }));
 
-google.maps.event.addDomListener(window, 'load', initialize);
+      google.maps.event.addListener(
+        marker,
+        "click",
+        (function (marker, i) {
+          //console.log(arrDestinations[i].title);
+          return function () {
+            var html =
+              "<b>" +
+              arrDestinations[i].title +
+              "</b></br><b>Name: " +
+              arrDestinations[i].Name +
+              "</b> <br/><b>Price: " +
+              arrDestinations[i].price +
+              "</b></br><b>DOP: " +
+              arrDestinations[i].DOP +
+              "</b>";
+            infowindow.setContent(html);
+            //  infowindow.setContent(arrDestinations[i].price);
+            infowindow.open(map, marker);
+          };
+        })(marker, i)
+      );
+      // draw lines between each marker and home.  these are curved lines, not as the crow flies, i.e. they take into account the curvature of the earth (only noticable on longer distances)
+      arrDestinations[i].polyline = new google.maps.Polyline({
+        path: [homeLatlng, latLng],
+        strokeColor: arrDestinations[i].lineColor,
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        geodesic: true,
+        map: map,
+        polylineID: i,
+      });
+
+      // calculate the distance between home and this marker
+      stuDistances = calculateDistances(homeLatlng, latLng);
+      $("#tableNeighbours").append(
+        '<tr id="row' +
+          i +
+          '">' +
+          "<td>" +
+          arrDestinations[i].title +
+          "</td>" +
+          "<td>" +
+          stuDistances.km +
+          " km</td>" +
+          "<td>" +
+          stuDistances.miles +
+          " miles</td>" +
+          "</tr>"
+      );
+
+      // get the point half-way between this marker and the home marker
+      inBetween = google.maps.geometry.spherical.interpolate(
+        homeLatlng,
+        latLng,
+        0.5
+      );
+
+      // create an invisible marker
+      labelMarker = new google.maps.Marker({
+        position: inBetween,
+        map: map,
+        visible: false,
+      });
+
+      arrDestinations[i].label = new Label();
+
+      arrDestinations[i].label.bindTo("position", labelMarker, "position");
+      arrDestinations[i].label.set("text", stuDistances.miles + " miles");
+
+      // we'll use this ID later:
+      arrDestinations[i].label.polylineID = i;
+
+      // lets add an event listener, if you click the line, i'll tell you the distance
+      google.maps.event.addListener(
+        arrDestinations[i].polyline,
+        "click",
+        function () {
+          // remove other labels
+          for (j = 0; j < arrDestinations.length; j++) {
+            if (this.polylineID != j) {
+              if (typeof arrDestinations[j].label != "undefined") {
+                arrDestinations[j].label.setMap(null);
+              }
+            } else {
+              arrDestinations[j].label.setMap(map);
+            }
+          }
+        }
+      );
+    }
+  }
+
+  function calculateDistances(start, end) {
+    var stuDistances = {};
+
+    stuDistances.metres = google.maps.geometry.spherical.computeDistanceBetween(
+      start,
+      end
+    ); // distance in metres rounded to 1dp
+    stuDistances.km = Math.round((stuDistances.metres / 1000) * 10) / 10; // distance in km rounded to 1dp
+    stuDistances.miles =
+      Math.round((stuDistances.metres / 1000) * 0.6214 * 10) / 10; // distance in miles rounded to 1dp
+
+    return stuDistances;
+  }
+
+  function removeAllLabels() {
+    var i;
+    // remove other markers
+    for (i = 0; i < arrDestinations.length; i++) {
+      // don't remove the current label
+      if (typeof arrDestinations[i].label != "undefined") {
+        arrDestinations[i].label.setMap(null);
+      }
+    }
+  }
+
+  $(document).ready(function () {
+    $("table").delegate("td", "mouseover mouseout", function (e) {
+      if (e.type == "mouseover") {
+        var id = $(this).parent().attr("id").replace("row", "");
+        google.maps.event.trigger(arrDestinations[id].polyline, "click");
+      } else {
+        removeAllLabels();
+      }
+    });
+  });
+
+  google.maps.event.addDomListener(window, "load", initialize);
 </script>
