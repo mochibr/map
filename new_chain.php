@@ -1,11 +1,10 @@
-<div
-  id="map_canvas"
-  style="position: absolute; width: 100%; top: 0px; left: 0px; height: 100vh"
-></div>
-<script
-  type="text/javascript"
-  src="http://maps.googleapis.com/maps/api/js?sensor=false&&libraries=geometry&callback=map_init"
-></script>
+<?php
+require_once("single_map_json.php");
+//require_once("map_data_json.php");
+?>
+<div id="map_canvas" style="position: absolute; width: 100%; top: 0px; left: 0px; height: 100vh"></div>
+<div id="show_data"></div>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&&libraries=geometry&callback=map_init"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="data.js"></script>
 <script>
@@ -28,24 +27,24 @@
   Label.prototype = new google.maps.OverlayView();
 
   // Implement onAdd
-  Label.prototype.onAdd = function () {
+  Label.prototype.onAdd = function() {
     var pane = this.getPanes().floatPane;
     pane.appendChild(this.div_);
 
     // Ensures the label is redrawn if the text or position is changed.
     var me = this;
     this.listeners_ = [
-      google.maps.event.addListener(this, "position_changed", function () {
+      google.maps.event.addListener(this, "position_changed", function() {
         me.draw();
       }),
-      google.maps.event.addListener(this, "text_changed", function () {
+      google.maps.event.addListener(this, "text_changed", function() {
         me.draw();
       }),
     ];
   };
 
   // Implement onRemove
-  Label.prototype.onRemove = function () {
+  Label.prototype.onRemove = function() {
     var i, I;
     this.div_.parentNode.removeChild(this.div_);
 
@@ -56,7 +55,7 @@
   };
 
   // Implement draw
-  Label.prototype.draw = function () {
+  Label.prototype.draw = function() {
     var projection = this.getProjection();
     var position = projection.fromLatLngToDivPixel(this.get("position"));
 
@@ -73,9 +72,9 @@
   function initialize() {
     var map, i, j, latLng, stuDistances, inBetween, labelMarker;
 
-    arrDestinations = data;
+    arrDestinations = <?php echo $FData; ?>;
 
-    var stuHome = Home;
+    var stuHome = <?php echo trim($HData, '[]'); ?>;
 
     var homeLatlng = new google.maps.LatLng(stuHome.lat, stuHome.lng);
     var myOptions = {
@@ -92,18 +91,18 @@
     });
 
     var infowindow = new google.maps.InfoWindow();
-    google.maps.event.addListener(homeMarker, "click", function () {
+    google.maps.event.addListener(homeMarker, "click", function() {
       infowindow.setContent(stuHome.title);
       infowindow.open(map, homeMarker);
     });
 
     $("#tableNeighbours").append(
       "<tr>" +
-        "<th>Destination</th>" +
-        '<th colspan="2">' +
-        stuHome.title +
-        "</th>" +
-        "</tr>"
+      "<th>Destination</th>" +
+      '<th colspan="2">' +
+      stuHome.title +
+      "</th>" +
+      "</tr>"
     );
 
     for (i = 0; i < arrDestinations.length; i++) {
@@ -122,18 +121,21 @@
       google.maps.event.addListener(
         marker,
         "click",
-        (function (marker, i) {
+        (function(marker, i) {
           //console.log(arrDestinations[i].title);
-          return function () {
+          return function() {
             var html =
-              "<b>" +
-              arrDestinations[i].title +
-              "</b></br><b>Name: " +
-              arrDestinations[i].Name +
-              "</b> <br/><b>Price: " +
-              arrDestinations[i].price +
-              "</b></br><b>DOP: " +
-              arrDestinations[i].DOP +
+              "<b> Product: " + arrDestinations[i].StyleDes + "</b>" +
+              "</br><b> Class: " + arrDestinations[i].Class + "</b>" +
+              "</br><b> Country: " + arrDestinations[i].FCountry + "</b>" +
+              "</br><b> FactoryName: " +
+              arrDestinations[i].FactoryName +
+              "</b></br><b>FAddress: " +
+              arrDestinations[i].FAddress +
+              "</b> <br/><b>FCity: " +
+              arrDestinations[i].FCity +
+              "</b></br><b>FState: " +
+              arrDestinations[i].FState +
               "</b>";
             infowindow.setContent(html);
             //  infowindow.setContent(arrDestinations[i].price);
@@ -156,18 +158,18 @@
       stuDistances = calculateDistances(homeLatlng, latLng);
       $("#tableNeighbours").append(
         '<tr id="row' +
-          i +
-          '">' +
-          "<td>" +
-          arrDestinations[i].title +
-          "</td>" +
-          "<td>" +
-          stuDistances.km +
-          " km</td>" +
-          "<td>" +
-          stuDistances.miles +
-          " miles</td>" +
-          "</tr>"
+        i +
+        '">' +
+        "<td>" +
+        arrDestinations[i].title +
+        "</td>" +
+        "<td>" +
+        stuDistances.km +
+        " km</td>" +
+        "<td>" +
+        stuDistances.miles +
+        " miles</td>" +
+        "</tr>"
       );
 
       // get the point half-way between this marker and the home marker
@@ -196,7 +198,7 @@
       google.maps.event.addListener(
         arrDestinations[i].polyline,
         "click",
-        function () {
+        function() {
           // remove other labels
           for (j = 0; j < arrDestinations.length; j++) {
             if (this.polylineID != j) {
@@ -237,8 +239,8 @@
     }
   }
 
-  $(document).ready(function () {
-    $("table").delegate("td", "mouseover mouseout", function (e) {
+  $(document).ready(function() {
+    $("table").delegate("td", "mouseover mouseout", function(e) {
       if (e.type == "mouseover") {
         var id = $(this).parent().attr("id").replace("row", "");
         google.maps.event.trigger(arrDestinations[id].polyline, "click");

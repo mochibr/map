@@ -1,0 +1,106 @@
+<div id="gmap"></div>
+<button type="button" id="slide-prev">❮ Prev</button>
+<button type="button" id="slide-next">Next ❯</button>
+<div id="desc"></div>
+<style>
+  #gmap {
+    height: 200px;
+  }
+
+  #infowindow {
+    padding: 10px;
+  }
+
+  .slide {
+    display: none;
+  }
+
+  .slide.is-active {
+    display: block;
+  }
+</style>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+<script>
+  const locations = [
+    {
+      lat: 45.840196,
+      lng: 15.964331,
+      name: "Zagreb",
+      desc: "Lorem...",
+    },
+    {
+      lat: 43.514851,
+      lng: 16.449083,
+      name: "Split",
+      desc: "Ipsum...",
+    },
+    {
+      lat: 42.645725,
+      lng: 18.094058,
+      name: "Dubrovnik",
+      desc: "Dolor...",
+    },
+  ];
+
+  let gmap;
+  let slideIndex = 0; // (Indexes are 0 based, not 1!!!)
+  const EL_map = document.querySelector("#gmap");
+  const EL_desc = document.querySelector("#desc");
+
+  const ELS_slides = document.querySelectorAll(".slide");
+  const btnPrev = document.querySelector("#slide-prev");
+  const btnNext = document.querySelector("#slide-next");
+  const slidePrev = () => {
+    slideIndex -= 1;
+    showSlide();
+  };
+  const slideNext = () => {
+    slideIndex += 1;
+    showSlide();
+  };
+
+  const mapCenter = (lat, lng) => {
+    const center = new google.maps.LatLng(lat, lng);
+    gmap.setZoom(10);
+    gmap.panTo(center);
+  };
+
+  const showSlide = () => {
+    // Fix index
+    if (slideIndex < 0) slideIndex = locations.length - 1;
+    if (slideIndex > locations.length - 1) slideIndex = 0;
+    const loc = locations[slideIndex];
+    // Handle slides
+    EL_desc.innerHTML = `<h2>${loc.name}</h2> ${loc.desc}`;
+    // Handle gmap
+    mapCenter(loc.lat, loc.lng);
+  };
+
+  const appInit = () => {
+    // INIT GMAP
+    gmap = new google.maps.Map(EL_map);
+    const loc = locations[slideIndex];
+    const infowindow = new google.maps.InfoWindow(); // Only one InfoWindow
+
+    function placeMarker(loc) {
+      const marker = new google.maps.Marker({
+        position: new google.maps.LatLng(loc.lat, loc.lng),
+        map: gmap,
+      });
+      google.maps.event.addListener(marker, "click", function () {
+        infowindow.close(); // Close previously opened infowindow
+        infowindow.setContent(`<div id="infowindow">${loc.name}</div>`);
+        infowindow.open(gmap, marker);
+      });
+    }
+    // Pass every location to placeMarker
+    locations.forEach(placeMarker);
+
+    // INIT SLIDES
+    showSlide();
+    btnPrev.addEventListener("click", slidePrev);
+    btnNext.addEventListener("click", slideNext);
+  };
+
+  google.maps.event.addDomListener(window, "load", appInit);
+</script>
